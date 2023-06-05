@@ -93,17 +93,19 @@ const MessageBox = styled.div`
       display: flex;
       flex-direction: column;
       gap: 8px;
-      overflow: auto;
+      overflow-y: auto;
       padding-block: 8px;
+      max-height: 70dvh;
 
       .message {
         display: flex;
         gap: 8px;
+        max-width: 80%;
         img {
           border-radius: 100px;
         }
         p {
-          padding: 4px;
+          padding: 8px;
           background: whitesmoke;
           border-radius: 4px;
         }

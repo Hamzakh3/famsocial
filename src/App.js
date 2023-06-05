@@ -4,12 +4,32 @@ import chat from "./assets/chat.svg";
 
 import { SideBar, Chats, MessageBox } from "./components/Sidebar";
 import InfoWithImage from "./components/InfoWithImage";
+import { useEffect } from "react";
+import { getGroupsChat, groupsChats } from "./config/firebase";
+import { useState } from "react";
 const Container = styled.div`
   display: grid;
   grid-template-columns: 70px 300px 1fr;
 `;
 
 function App() {
+  const [group, setGroup] = useState();
+  const [groups, setGroups] = useState();
+
+  useEffect(() => {
+    getGroups();
+  }, [group]);
+
+  const fetchGroupChats = async (groupId) => {
+    console.log(groupId);
+    const data = await getGroupsChat(groupId);
+    setGroup(data);
+  };
+
+  const getGroups = async () => {
+    const groupsName = await groupsChats();
+    setGroups(groupsName);
+  };
   return (
     <Container>
       <SideBar>
@@ -57,15 +77,24 @@ function App() {
         </div>
         <input type="search" id="search" name="search" className="txtSearch" />
         <ul className="chatList">
-          {[1, 2, 3, 4, 5].map((val, ind) => {
-            return <InfoWithImage />;
-          })}
+          {groups &&
+            groups?.length > 0 &&
+            groups.map((val, ind) => {
+              return (
+                <InfoWithImage
+                  key={`group-chat-${ind}`}
+                  groupId={val.id}
+                  data={val}
+                  setGroup={fetchGroupChats}
+                />
+              );
+            })}
         </ul>
       </Chats>
 
       <MessageBox>
         <div className="header">
-          <InfoWithImage />
+          { group?.length > 0 && <InfoWithImage data={group[0]}/> }
 
           <div className="buttonsGroup">
             <button className="iconBtn">
@@ -82,28 +111,40 @@ function App() {
 
         <div className="converstaionBox">
           <ul className="conversations">
-            <li className="right message">
-              <p>Hello</p>
-              <img src={chat} alt="Chat" width="15px" height=""/>
-            </li>
-            <li className="left message">
-              <img src={chat} alt="Chat" width="15px" height=""/>
-              <p>Hi How are you</p>
-            </li>
+            {group &&
+              group.length > 0 &&
+              group.map((mesg, ind) => {
+                return (
+                  <li className="left message" key={`message-${ind}`}>
+                    <img
+                      src={mesg?.profileUri ? mesg.profileUri : ""}
+                      alt="Chat"
+                      width="25px"
+                      height="25px"
+                    />
+                    <p>{mesg.msg}</p>
+                  </li>
+                );
+              })}
           </ul>
         </div>
 
         <div className="inputBox">
           <button className="iconBtn">
-            <img src={chat} alt="" width="12px" height=""/>
+            <img src={chat} alt="" width="12px" height="" />
           </button>
 
-          <input type="text" name="conversation" id="conversation" placeholder="type your message here ..."/>
+          <input
+            type="text"
+            name="conversation"
+            id="conversation"
+            placeholder="type your message here ..."
+          />
           <button className="iconBtn">
-            <img src={chat} alt="" width="12px" height=""/>
+            <img src={chat} alt="" width="12px" height="" />
           </button>
           <button className="iconBtn">
-            <img src={chat} alt="" width="12px" height=""/>
+            <img src={chat} alt="" width="12px" height="" />
           </button>
         </div>
       </MessageBox>

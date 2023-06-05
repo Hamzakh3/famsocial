@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import chat from "../assets/chat.svg"
 
 const List = styled.div`
   display: flex;
@@ -17,21 +16,25 @@ const List = styled.div`
 
 const ImgBox = styled.div`
   position: relative;
+  img{
+    object-fit: cover;
+    border-radius: 100px;
+  }
 `;
 
 const InfoBox = styled.div`
   flex: 1;
 `;
 
-const InfoWithImage = ({ src, title, subTitle, status }) => {
+const InfoWithImage = ({groupId, setGroup, data}) => {
   return (
-    <List>
+    <List id={groupId} onClick={() => setGroup(groupId)} >
       <ImgBox>
-        <img src={chat} alt="" width="18px" height="" />
+        <img src={data?.groupImage} alt="" width="35px" height="35px" />
         <div className="circle"></div>
       </ImgBox>
       <InfoBox>
-        <h4>NYC Food Events</h4>
+        <h4>{data?.profile}</h4>
         <small>544 members</small>
       </InfoBox>
     </List>
