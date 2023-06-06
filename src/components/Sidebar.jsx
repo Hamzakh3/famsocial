@@ -73,7 +73,7 @@ const MessageBox = styled.div`
   display: grid;
   grid-template-rows: auto 1fr auto;
   border-left: 1px solid whitesmoke;
-
+  height: 100dvh;
   .header {
     padding: 8px 16px;
     display: flex;
@@ -89,13 +89,13 @@ const MessageBox = styled.div`
   .converstaionBox {
     border-bottom: 1px solid whitesmoke;
     padding: 8px 16px;
+    height: 100%;
+    overflow-y: auto;
     .conversations {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      overflow-y: auto;
       padding-block: 8px;
-      max-height: 70dvh;
 
       .message {
         display: flex;
@@ -108,6 +108,7 @@ const MessageBox = styled.div`
           padding: 8px;
           background: whitesmoke;
           border-radius: 4px;
+          overflow-wrap: anywhere;
         }
       }
 

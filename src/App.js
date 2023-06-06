@@ -20,12 +20,11 @@ function App() {
 
   useEffect(() => {
     getGroups();
-    
   }, [group, open]);
 
   useEffect(() => {
-    showModal();    
-  }, [])
+    showModal();
+  }, []);
   const fetchGroupChats = async (groupId) => {
     console.log(groupId);
     const data = await getGroupsChat(groupId);
