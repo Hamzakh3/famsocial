@@ -7,6 +7,7 @@ import InfoWithImage from "./components/InfoWithImage";
 import { useEffect } from "react";
 import { getGroupsChat, groupsChats } from "./config/firebase";
 import { useState } from "react";
+import SubscribeModal from "./components/SubscribeModal";
 const Container = styled.div`
   display: grid;
   grid-template-columns: 70px 300px 1fr;
@@ -15,11 +16,16 @@ const Container = styled.div`
 function App() {
   const [group, setGroup] = useState();
   const [groups, setGroups] = useState();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     getGroups();
-  }, [group]);
+    
+  }, [group, open]);
 
+  useEffect(() => {
+    showModal();    
+  }, [])
   const fetchGroupChats = async (groupId) => {
     console.log(groupId);
     const data = await getGroupsChat(groupId);
@@ -29,6 +35,16 @@ function App() {
   const getGroups = async () => {
     const groupsName = await groupsChats();
     setGroups(groupsName);
+  };
+
+  const showModal = () => {
+    setTimeout(() => {
+      setOpen(true);
+    }, 5000);
+  };
+
+  const closeHandler = () => {
+    setOpen(false);
   };
   return (
     <Container>
@@ -94,7 +110,7 @@ function App() {
 
       <MessageBox>
         <div className="header">
-          { group?.length > 0 && <InfoWithImage data={group[0]}/> }
+          {group?.length > 0 && <InfoWithImage data={group[0]} />}
 
           <div className="buttonsGroup">
             <button className="iconBtn">
@@ -148,6 +164,7 @@ function App() {
           </button>
         </div>
       </MessageBox>
+      <SubscribeModal open={open} closeHandler={closeHandler} />
     </Container>
   );
 }
