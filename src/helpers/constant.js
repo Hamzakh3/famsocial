@@ -24,3 +24,12 @@ export const groupIds = [
     name: "Nyc Comedy"
   },
 ];
+
+export const groups = [
+  "C13lB27bsz0WaOlxMgg0nYyoPbuVRRWIieJ2vVqb",
+  "h7UhM6sU8p3Q9UnWX2Ml",
+  "G3ghxwSnBDRs42iIFhFd",
+  "yvOmAWwFcrr0qCUIuRr6",
+  "S7293vvZRlw2G3nvxcwv",
+  "O54pjFu3Jx6jUqFgAkss",
+]

@@ -48,7 +48,7 @@ const SubscribeModal = ({ open, closeHandler }) => {
               }}
             >
               <h1>Welcome to Famsocial</h1>
-              <IconButton>
+              <IconButton onClick={closeHandler}>
                 <CloseIcon />
               </IconButton>
             </div>

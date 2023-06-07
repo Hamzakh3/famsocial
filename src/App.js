@@ -1,34 +1,51 @@
 import styled from "styled-components";
 import "./App.css";
-import chat from "./assets/chat.svg";
-
 import { SideBar, Chats, MessageBox } from "./components/Sidebar";
 import InfoWithImage from "./components/InfoWithImage";
 import { useEffect } from "react";
 import { getGroupsChat, groupsChats } from "./config/firebase";
 import { useState } from "react";
 import SubscribeModal from "./components/SubscribeModal";
+import MessageIcon from "@mui/icons-material/Message";
+
+import {
+  AccountCircle,
+  ChatBubble,
+  DeleteOutline,
+  Person,
+  StarBorder,
+  BedtimeOutlined,
+  LinearScaleOutlined,
+  VideoCallOutlined,
+  PhoneOutlined,
+  GroupOutlined,
+  AddCircleOutlineOutlined,
+  AttachFileOutlined,
+  SendOutlined,
+  EmojiEmotionsOutlined,
+} from "@mui/icons-material";
 const Container = styled.div`
   display: grid;
   grid-template-columns: 70px 300px 1fr;
 `;
 
 function App() {
+  const [chats, setGroupChats] = useState();
   const [group, setGroup] = useState();
   const [groups, setGroups] = useState();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     getGroups();
-  }, [group, open]);
+  }, [chats, open]);
 
   useEffect(() => {
     showModal();
   }, []);
-  const fetchGroupChats = async (groupId) => {
-    console.log(groupId);
+  const fetchGroupChats = async (groupId, groupDetail) => {
     const data = await getGroupsChat(groupId);
-    setGroup(data);
+    setGroupChats(data);
+    setGroup(groupDetail);
   };
 
   const getGroups = async () => {
@@ -49,33 +66,33 @@ function App() {
     <Container>
       <SideBar>
         <div className="logo" style={{ color: "black" }}>
-          <img src={chat} alt="" width="25" height="" />
+          <MessageIcon color="primary" fontSize="large" />
         </div>
         <ul className="links">
           <li className="link">
             <div className="circle"></div>
-            <img src={chat} alt="" width="15" height="" />
+            <ChatBubble color="" fontSize="small" />
           </li>
           <li className="link">
             <div className="circle"></div>
-            <img src={chat} alt="" width="15" height="" />
+            <Person color="" fontSize="small" />
           </li>
           <li className="link">
             <div className="circle"></div>
-            <img src={chat} alt="" width="15" height="" />
+            <StarBorder color="" fontSize="small" />
           </li>
           <li className="link">
             <div className="circle"></div>
-            <img src={chat} alt="" width="15" height="" />
+            <DeleteOutline color="" fontSize="small" />
           </li>
         </ul>
 
         <ul className="bottomLinks links">
           <li className="link">
-            <img src={chat} alt="" width="20" />
+            <BedtimeOutlined color="" fontSize="small" />
           </li>
           <li className="link">
-            <img src={chat} alt="" width="22" />
+            <AccountCircle color="" fontSize="medium" />
           </li>
         </ul>
       </SideBar>
@@ -84,10 +101,10 @@ function App() {
         <div className="chatsHead">
           <h1>Chats</h1>
           <button className="iconBtn">
-            <img src={chat} alt="Chat" width="15px" height="" />
+            <GroupOutlined fontSize="small" />
           </button>
           <button className="iconBtn">
-            <img src={chat} alt="Chat" width="15px" height="" />
+            <AddCircleOutlineOutlined fontSize="small" />
           </button>
         </div>
         <input type="search" id="search" name="search" className="txtSearch" />
@@ -98,7 +115,7 @@ function App() {
               return (
                 <InfoWithImage
                   key={`group-chat-${ind}`}
-                  groupId={val.id}
+                  groupId={val.myId}
                   data={val}
                   setGroup={fetchGroupChats}
                 />
@@ -109,26 +126,26 @@ function App() {
 
       <MessageBox>
         <div className="header">
-          {group?.length > 0 && <InfoWithImage data={group[0]} />}
+          {group && <InfoWithImage data={group} />}
 
           <div className="buttonsGroup">
             <button className="iconBtn">
-              <img src={chat} alt="Chat" width="15px" height="" />
+              <PhoneOutlined color="success" fontSize="small" />
             </button>
             <button className="iconBtn">
-              <img src={chat} alt="Chat" width="15px" height="" />
+              <VideoCallOutlined color="warning" fontSize="small" />
             </button>
             <button className="iconBtn">
-              <img src={chat} alt="Chat" width="15px" height="" />
+              <LinearScaleOutlined color="" fontSize="small" />
             </button>
           </div>
         </div>
 
         <div className="converstaionBox">
           <ul className="conversations">
-            {group &&
-              group.length > 0 &&
-              group.map((mesg, ind) => {
+            {chats &&
+              chats.length > 0 &&
+              chats.map((mesg, ind) => {
                 return (
                   <li className="left message" key={`message-${ind}`}>
                     <img
@@ -146,7 +163,7 @@ function App() {
 
         <div className="inputBox">
           <button className="iconBtn">
-            <img src={chat} alt="" width="12px" height="" />
+            <EmojiEmotionsOutlined fontSize="small" />
           </button>
 
           <input
@@ -156,10 +173,10 @@ function App() {
             placeholder="type your message here ..."
           />
           <button className="iconBtn">
-            <img src={chat} alt="" width="12px" height="" />
+            <AttachFileOutlined fontSize="small" />
           </button>
           <button className="iconBtn">
-            <img src={chat} alt="" width="12px" height="" />
+            <SendOutlined fontSize="small" />
           </button>
         </div>
       </MessageBox>

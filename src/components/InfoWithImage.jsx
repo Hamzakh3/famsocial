@@ -28,14 +28,14 @@ const InfoBox = styled.div`
 
 const InfoWithImage = ({groupId, setGroup, data}) => {
   return (
-    <List id={groupId} onClick={() => setGroup(groupId)} >
+    <List id={groupId} onClick={() => setGroup && setGroup(groupId, data)} >
       <ImgBox>
-        <img src={data?.groupImage} alt="" width="35px" height="35px" />
+        <img src={data?.img} alt="" width="35px" height="35px" />
         <div className="circle"></div>
       </ImgBox>
       <InfoBox>
-        <h4>{data?.profile}</h4>
-        <small>544 members</small>
+        <h4>{data?.name}</h4>
+        <small>{data?.members.length} Members</small>
       </InfoBox>
     </List>
   );
