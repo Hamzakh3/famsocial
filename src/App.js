@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import "./App.css";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db, sendMessage } from "./config/firebase";
 import { SideBar, Chats, MessageBox } from "./components/Sidebar";
 import InfoWithImage from "./components/InfoWithImage";
 import { useEffect } from "react";
@@ -7,6 +9,8 @@ import { getGroupsChat, groupsChats } from "./config/firebase";
 import { useState } from "react";
 import SubscribeModal from "./components/SubscribeModal";
 import MessageIcon from "@mui/icons-material/Message";
+import loader from "./assets/loading.svg";
+import user from "./assets/user.png";
 
 import {
   AccountCircle,
@@ -24,9 +28,20 @@ import {
   SendOutlined,
   EmojiEmotionsOutlined,
 } from "@mui/icons-material";
+import { useRef } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
 const Container = styled.div`
   display: grid;
   grid-template-columns: 70px 300px 1fr;
+`;
+
+const BoxMessage = styled.div`
+  height: 100%;
+  display: grid;
+  place-content: center;
+  h2 {
+    color: lightgray;
+  }
 `;
 
 function App() {
@@ -34,34 +49,99 @@ function App() {
   const [group, setGroup] = useState();
   const [groups, setGroups] = useState();
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [ifNoChats, setIfNoChats] = useState("");
+  const [userid, setUserId] = useState();
+  const [message, setMessage] = useState("");
+  const chatList = useRef();
+
+  useEffect(() => {
+  }, [chats, open, ifNoChats, chatList]);
+
+  useEffect(() => {
+    if (group) {
+      const docRef = collection(db, "Chats", group.myId, "messages");
+      // const q = query(docRef, orderBy("createdAt"))
+      const unsubscribe = onSnapshot(docRef, (snapshot) => {
+        let data = [];
+        snapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+        data = data.sort((a , b) => {
+            return a.createAt - b.createAt
+        })
+        setGroupChats(data);
+        scollToBottom()
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [group]);
 
   useEffect(() => {
     getGroups();
-  }, [chats, open]);
-
-  useEffect(() => {
-    showModal();
+    
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/auth.user
+        const uid = user.uid;
+        setUserId(uid);
+      } else {
+        showModal();
+      }
+    });
   }, []);
+
+  const scollToBottom = () => {
+    const current = chatList.current
+    const chatUlList = current.childNodes[0]
+    const lastMessage = chatUlList.lastChild
+    
+    lastMessage.scrollIntoView({behavior: 'smooth'});
+  }
+
   const fetchGroupChats = async (groupId, groupDetail) => {
+    setLoading(true);
     const data = await getGroupsChat(groupId);
+
+    // const unsub =
     setGroupChats(data);
     setGroup(groupDetail);
+    setLoading(false);
+    data.length === 0 && setIfNoChats("No Chats available in this group");
   };
 
   const getGroups = async () => {
     const groupsName = await groupsChats();
     setGroups(groupsName);
+    setIfNoChats("Select any Group for send and read messages");
   };
 
-  const showModal = () => {
-    setTimeout(() => {
+  const showModal = (imidiate) => {
+    if (imidiate) {
       setOpen(true);
-    }, 5000);
+    } else {
+      setTimeout(() => {
+        setOpen(true);
+      }, 5000);
+    }
   };
 
   const closeHandler = () => {
     setOpen(false);
   };
+
+  const sendMesgHandler = () => {
+    !userid && showModal("imidiate");
+    if (message.trim().length > 0 && userid) {
+      sendMessage(group.myId, message, userid);
+      setMessage("");
+    }
+  };
+
   return (
     <Container>
       <SideBar>
@@ -141,24 +221,49 @@ function App() {
           </div>
         </div>
 
-        <div className="converstaionBox">
-          <ul className="conversations">
-            {chats &&
-              chats.length > 0 &&
-              chats.map((mesg, ind) => {
+        <div className="converstaionBox" ref={chatList}>
+          {!loading && chats && chats.length > 0 ? (
+            <ul className="conversations">
+              {chats.map((mesg, ind) => {
                 return (
-                  <li className="left message" key={`message-${ind}`}>
-                    <img
-                      src={mesg?.profileUri ? mesg.profileUri : ""}
-                      alt="Chat"
-                      width="25px"
-                      height="25px"
-                    />
+                  <li
+                    className={
+                      mesg?.senderId && mesg?.senderId === userid
+                        ? "right message"
+                        : "left message"
+                    }
+                    key={`message-${ind}`}
+                  >
+                    {(mesg?.senderId === undefined || mesg.senderId !== userid) && (
+                      <img
+                        src={mesg?.profileUri ? mesg.profileUri : user}
+                        alt="profile_img"
+                        width="25px"
+                        height="25px"
+                      />
+                    )}
                     <p>{mesg.msg}</p>
+                    {mesg?.senderId && mesg.senderId === userid && (
+                      <img
+                        src={mesg?.profileUri ? mesg.profileUri : user}
+                        alt="profile_img"
+                        width="25px"
+                        height="25px"
+                      />
+                    )}
                   </li>
                 );
               })}
-          </ul>
+            </ul>
+          ) : (
+            <BoxMessage>
+              {!loading ? (
+                <h2>{ifNoChats}</h2>
+              ) : (
+                <img src={loader} alt="" width={"50px"} height={""} />
+              )}
+            </BoxMessage>
+          )}
         </div>
 
         <div className="inputBox">
@@ -171,11 +276,14 @@ function App() {
             name="conversation"
             id="conversation"
             placeholder="type your message here ..."
+            disabled={userid ? false : true}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
           />
           <button className="iconBtn">
             <AttachFileOutlined fontSize="small" />
           </button>
-          <button className="iconBtn">
+          <button className="iconBtn" onClick={sendMesgHandler}>
             <SendOutlined fontSize="small" />
           </button>
         </div>

@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { Timestamp } from "firebase/firestore";
 import { groups } from "../helpers/constant";
 import {
   getFirestore,
@@ -8,6 +9,8 @@ import {
   getDocs,
   query,
   where,
+  setDoc,
+  doc,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -21,11 +24,11 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 auth.useDeviceLanguage();
 
-const db = getFirestore(app);
+export const db = getFirestore(app);
 
 export const getGroupsChat = async (groupId) => {
   try {
@@ -44,7 +47,7 @@ export const getGroupsChat = async (groupId) => {
 
 export const groupsChats = async () => {
   try {
-    const q = query(collection(db, "Folders"), where('myId', 'in', groups))
+    const q = query(collection(db, "Folders"), where("myId", "in", groups));
     const querySnapshot = await getDocs(q);
     const data = [];
     querySnapshot.forEach((doc) => {
@@ -55,3 +58,49 @@ export const groupsChats = async () => {
     console.error(e);
   }
 };
+
+export const addContact = async (number, id) => {
+  const newContact = doc(collection(db, "Contacts", "famSocialContacts", id));
+  return await setDoc(newContact, {
+    name: number,
+    phoneNumber: number,
+    user: id,
+    id: newContact.id,
+  })
+    .then((snap) => {
+      return true;
+    })
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
+};
+
+export const sendMessage = (groupdId, message, userid) => {
+  const chatRef = doc(collection(db, "Chats", groupdId, "messages"));
+  setDoc(chatRef, {
+    msg: message,
+    chatId: chatRef.id,
+    senderId: userid,
+    createdAt: Timestamp.fromDate(new Date()).seconds,
+  });
+  return true;
+};
+
+// export const testing = async (groupId) => {
+//   try {
+//     const querySnapshot = doc(db, "Chats", "h7UhM6sU8p3Q9UnWX2Ml")
+//     await updateDoc(querySnapshot, {
+//       messages: deleteField()
+//     })
+//     return true;
+//   } catch (e) {
+//     console.error(e);
+//   }
+// };
+
+// testing();
+// addContact("923130987654")
+// 923011234567
+// ZupVvb4GwXEgaViskvZa
+// "ubtppkMJ4NPeN40iafqB"
